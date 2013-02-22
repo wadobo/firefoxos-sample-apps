@@ -1,0 +1,12 @@
+{
+    "name":"Rain!",
+    "developer": {
+        "name":"Wadobo Labs Demo",
+        "url":"http://wadobo.com"
+    },
+    "description":"Raining balls",
+    "launch_path":"/app.html",
+    "icons":{
+        "128":"/icon.png"
+    }
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>RAIN!</title>
+    <style>
+        body {
+            margin: 0px;
+            padding: 0px;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: black;
+        }
+
+        #install {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <button id="install" onClick="install()">Install this app</button>
+    <canvas id="rain" width="100" height="500"></canvas>
+    <script>
+        var drops = new Array();
+        function createDrop () {
+            var canvas = document.getElementById('rain');
+            var width = canvas.width;
+            var height = canvas.height;
+
+            var drop = new Drop();
+            var r = Math.floor(Math.random() * (width - 30));
+            drop.move(r, 0);
+            drops.push(drop);
+        }
+
+        function Drop () {
+            this.top = 0;
+            this.left = 0;
+            this.speed = Math.floor(Math.random() * 8) + 4;
+            this.acc = 0.5;
+            this.size = Math.floor(Math.random() * 10) + 10;
+            this.died = false;
+
+            this.draw = function (ctx) {
+                ctx.fillStyle = 'rgba(200, 0, 0, 0.5)';
+                ctx.beginPath();
+                ctx.arc(this.left, this.top, this.size, 0, Math.PI*2, true);
+                ctx.fill();
+            };
+
+            this.die = function () {
+                this.died = true;
+                delete this;
+            };
+
+            this.move = function (x, y) {
+                this.top += y;
+                this.left += x;
+            };
+
+            this.fall = function () {
+                this.speed += this.acc;
+                this.move(0, this.speed);
+            }
+        }
+
+        function rain () {
+            var canvas = document.getElementById('rain');
+            var w = canvas.width;
+            var h = canvas.height;
+
+            if (drops.length < 20) {
+                createDrop();
+            }
+            var toRemove = new Array();
+            for (var i=0; i<drops.length; i++) {
+                var d = drops[i];
+                d.fall();
+                if (d.top + 30 >= h) {
+                    d.die();
+                    toRemove.push(i);
+                }
+            }
+
+            toRemove.reverse();
+            for (var i=0; i<toRemove.length; i++) {
+                drops.splice(toRemove[i], 1);
+            }
+
+            setTimeout(rain, 33);
+        }
+
+        function draw () {
+            var canvas = document.getElementById('rain');
+            var w = canvas.width;
+            var h = canvas.height;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,w,h);
+            for (var i=0; i<drops.length; i++) {
+                var drop = drops[i];
+                drop.draw(ctx);
+            }
+
+            setTimeout(draw, 33);
+        }
+
+        function resize () {
+            var width = window.innerWidth;
+            var height = window.innerHeight;
+            var canvas = document.getElementById('rain');
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        function initApplication () {
+            resize();
+            setTimeout(rain, 33);
+            setTimeout(draw, 33);
+            checkInstall();
+
+            window.onresize = resize;
+        }
+
+        function checkInstall () {
+            var request = navigator.mozApps.getSelf();
+            request.onsuccess = function() {
+                if (request.result) {
+                    var button = document.getElementById('install');
+                    button.style.display = 'none';
+                } else {
+                    var button = document.getElementById('install');
+                    button.style.display = 'block';
+                }
+            };
+        }
+
+        function install () {
+            var request = navigator.mozApps.install("/manifest.webapp");
+            request.onsuccess = function() {
+                alert("GREAT");
+            };
+            request.onerror = function() {
+                alert("Whoops: " + this.error.name);
+            };
+        }
+
+        document.onreadystatechange = function () {
+            if (document.readyState == "complete")
+                initApplication();
+        }
+    </script>
+</body>
+</html>
+
