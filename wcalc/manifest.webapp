@@ -1,0 +1,16 @@
+{
+    "name":"WCalc",
+    "description":"Simple calculator",
+    "version": "1.0",
+    "developer": {
+        "name":"danigm <danigm@wadobo.com>",
+        "url":"http://wadobo.com"
+    },
+    "launch_path":"/index.html",
+    "appcache_path": "/offline.appcache",
+    "icons":{
+        "32":"/icon32.png",
+        "64":"/icon64.png",
+        "128":"/icon128.png"
+    }
+}

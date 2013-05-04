@@ -1,0 +1,201 @@
+<!doctype html>
+<html manifest="offline.appcache">
+<head>
+    <title>Calculator</title>
+    <style>
+        #install {
+            font-size: 40pt;
+            display: none;
+        }
+
+        .button {
+            cursor: pointer;
+            font-size: 40pt;
+            border-radius: 4px;
+            border: 1px solid black;
+            background-color: white;
+        }
+
+        .button:hover {
+            background-color: black;
+            color: white;
+        }
+
+        #calc {
+            background-color: #44ff44;
+        }
+
+        .command {
+            background-color: #ffff44;
+        }
+
+        #clear {
+            background-color: #ff4444;
+        }
+
+        html, body, #interface {
+            height: 90%;
+            text-align: center;
+            background-color: black;
+        }
+
+        #info {
+            font-size: small;
+            text-align: right;
+            color: #555;
+        }
+
+        #result {
+            text-align: right;
+            font-size: 50pt;
+            border: 1px solid black;
+            background-color: white;
+        }
+
+        table {
+            width: 100%;
+            height: 100%;
+        }
+        table td {
+        }
+    </style>
+</head>
+
+<body>
+    <div id="interface">
+        <table>
+            <tr>
+                <td colspan="5">
+                    <div id="result">0.00</div>
+                    <div id="info"></div>
+                </td>
+            </tr>
+            <!-- first row -->
+            <tr>
+                <td class="button" data-val="7">7</td>
+                <td class="button" data-val="8">8</td>
+                <td class="button" data-val="9">9</td>
+                <td class="button command" data-val="div">/</td>
+                <td id="clear" class="button" data-val="clear">C</td>
+
+            </tr>
+            <!-- second row -->
+            <tr>
+                <td class="button" data-val="4">4</td>
+                <td class="button" data-val="5">5</td>
+                <td class="button" data-val="6">6</td>
+                <td class="button command" data-val="mul">*</td>
+                <td rowspan="3" id="calc" class="button" data-val="calc">=</td>
+            </tr>
+            <!-- third row -->
+            <tr>
+                <td class="button" data-val="1">1</td>
+                <td class="button" data-val="2">2</td>
+                <td class="button" data-val="3">3</td>
+                <td class="button command" data-val="sub">-</td>
+            </tr>
+            <!-- fourth row -->
+            <tr>
+                <td class="button" data-val="0">0</td>
+                <td class="button" data-val=".">.</td>
+                <td colspan="2" class="button command" data-val="add">+</td>
+            </tr>
+        </table>
+        <button id="install" onClick="install()">Install this app</button>
+    </div>
+
+    <script type="text/javascript">
+        Calculator = {
+            stat: "none",
+            ldata: 0,
+            rdata: 0,
+            result: 0,
+            commands: ['add', 'sub', 'mul', 'div', 'calc', 'clear'],
+
+            init: function() {
+                var buttons = document.querySelectorAll('.button');
+                var calc = this;
+
+                for (var i=0; i<buttons.length; i++) {
+                    var obj = buttons[i];
+                    obj.addEventListener('click', function (event) {
+                        var val = this.dataset.val;
+                        calc.compute(val);
+                    }, false);
+                }
+            },
+
+            isCommand: function(val) {
+                return this.commands.indexOf(val) >= 0;
+            },
+
+            compute: function(val) {
+                if (this.isCommand(val)) {
+                    if (val == "clear") {
+                        this.result = 0;
+                        this.ldata = this.result;
+                        this.rdata = 0;
+                        this.stat = "none";
+                    } else if (val == "calc") {
+                        if (this.stat == "add") {
+                            this.result = parseFloat(this.ldata) + parseFloat(this.rdata);
+                        } else if (this.stat == "sub") {
+                            this.result = parseFloat(this.ldata) - parseFloat(this.rdata);
+                        } else if (this.stat == "mul") {
+                            this.result = parseFloat(this.ldata) * parseFloat(this.rdata);
+                        } else if (this.stat == "div") {
+                            this.result = parseFloat(this.ldata) / parseFloat(this.rdata);
+                        }
+                        this.ldata = this.result;
+                        this.rdata = 0;
+                        this.stat = "none";
+                    } else {
+                        this.stat = val;
+                    }
+                } else {
+                    if (this.stat == "none") {
+                        this.ldata = this.ldata + "" + val;
+                        this.result = this.ldata;
+                    } else {
+                        this.rdata = this.rdata + "" + val;
+                        this.result = this.rdata;
+                    }
+                }
+
+                var result = document.querySelector("#result");
+                result.innerHTML = parseFloat(parseFloat(this.result).toFixed(5));
+
+                var info = document.querySelector("#info");
+                info.innerHTML = this.stat;
+            },
+        };
+
+        // main
+        Calculator.init();
+        checkInstall();
+
+        function checkInstall () {
+            var request = navigator.mozApps.getSelf();
+            var button = document.getElementById('install');
+
+            request.onsuccess = function() {
+                if (!request.result) {
+                    button.style.display = 'block';
+                }
+            };
+        }
+
+        function install () {
+            var request = navigator.mozApps.install("http://192.168.0.102/manifest.webapp");
+            request.onsuccess = function() {
+                alert("GREAT");
+            };
+            request.onerror = function() {
+                alert("Whoops: " + this.error.name);
+            };
+        }
+
+    </script>
+</body>
+
+</html>
